@@ -56,7 +56,7 @@ void test_diff_blob__can_compare_text_blobs(void)
 
 	/* diff on tests/resources/attr/root_test1 */
 	cl_git_pass(git_diff_blobs(
-		a, b, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		a, b, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.file_status[GIT_DELTA_MODIFIED]);
@@ -71,7 +71,7 @@ void test_diff_blob__can_compare_text_blobs(void)
 	/* diff on tests/resources/attr/root_test2 */
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		b, c, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		b, c, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.file_status[GIT_DELTA_MODIFIED]);
@@ -86,7 +86,7 @@ void test_diff_blob__can_compare_text_blobs(void)
 	/* diff on tests/resources/attr/root_test3 */
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		a, c, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		a, c, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.file_status[GIT_DELTA_MODIFIED]);
@@ -100,7 +100,7 @@ void test_diff_blob__can_compare_text_blobs(void)
 
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		c, d, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		c, d, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.file_status[GIT_DELTA_MODIFIED]);
@@ -122,7 +122,7 @@ void test_diff_blob__can_compare_against_null_blobs(void)
 	git_blob *e = NULL;
 
 	cl_git_pass(git_diff_blobs(
-		d, e, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		d, e, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.file_status[GIT_DELTA_DELETED]);
@@ -137,7 +137,7 @@ void test_diff_blob__can_compare_against_null_blobs(void)
 	memset(&expected, 0, sizeof(expected));
 
 	cl_git_pass(git_diff_blobs(
-		d, e, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		d, e, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.file_status[GIT_DELTA_ADDED]);
@@ -152,7 +152,7 @@ void test_diff_blob__can_compare_against_null_blobs(void)
 	memset(&expected, 0, sizeof(expected));
 
 	cl_git_pass(git_diff_blobs(
-		alien, NULL, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		alien, NULL, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.files_binary);
@@ -163,7 +163,7 @@ void test_diff_blob__can_compare_against_null_blobs(void)
 	memset(&expected, 0, sizeof(expected));
 
 	cl_git_pass(git_diff_blobs(
-		NULL, alien, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		NULL, alien, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.files);
 	cl_assert_equal_i(1, expected.files_binary);
@@ -183,21 +183,21 @@ static void assert_identical_blobs_comparison(diff_expects *expected)
 void test_diff_blob__can_compare_identical_blobs(void)
 {
 	cl_git_pass(git_diff_blobs(
-		d, d, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		d, d, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(0, expected.files_binary);
 	assert_identical_blobs_comparison(&expected);
 
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		NULL, NULL, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		NULL, NULL, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(0, expected.files_binary);
 	assert_identical_blobs_comparison(&expected);
 
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		alien, alien, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		alien, alien, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert(expected.files_binary > 0);
 	assert_identical_blobs_comparison(&expected);
@@ -223,14 +223,14 @@ void test_diff_blob__can_compare_two_binary_blobs(void)
 	cl_git_pass(git_blob_lookup_prefix(&heart, g_repo, &h_oid, 4));
 
 	cl_git_pass(git_diff_blobs(
-		alien, heart, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		alien, heart, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	assert_binary_blobs_comparison(&expected);
 
 	memset(&expected, 0, sizeof(expected));
 
 	cl_git_pass(git_diff_blobs(
-		heart, alien, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		heart, alien, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	assert_binary_blobs_comparison(&expected);
 
@@ -240,14 +240,14 @@ void test_diff_blob__can_compare_two_binary_blobs(void)
 void test_diff_blob__can_compare_a_binary_blob_and_a_text_blob(void)
 {
 	cl_git_pass(git_diff_blobs(
-		alien, d, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		alien, d, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	assert_binary_blobs_comparison(&expected);
 
 	memset(&expected, 0, sizeof(expected));
 
 	cl_git_pass(git_diff_blobs(
-		d, alien, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		d, alien, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	assert_binary_blobs_comparison(&expected);
 }
@@ -288,7 +288,7 @@ void test_diff_blob__comparing_two_text_blobs_honors_interhunkcontext(void)
 
 	/* Test with default inter-hunk-context (not set) => default is 0 */
 	cl_git_pass(git_diff_blobs(
-		old_d, d, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		old_d, d, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(2, expected.hunks);
 
@@ -296,7 +296,7 @@ void test_diff_blob__comparing_two_text_blobs_honors_interhunkcontext(void)
 	opts.interhunk_lines = 0;
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		old_d, d, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		old_d, d, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(2, expected.hunks);
 
@@ -304,7 +304,7 @@ void test_diff_blob__comparing_two_text_blobs_honors_interhunkcontext(void)
 	opts.interhunk_lines = 1;
 	memset(&expected, 0, sizeof(expected));
 	cl_git_pass(git_diff_blobs(
-		old_d, d, &opts, &expected, diff_file_cb, diff_hunk_cb, diff_line_cb));
+		old_d, d, &opts, diff_file_cb, diff_hunk_cb, diff_line_cb, &expected));
 
 	cl_assert_equal_i(1, expected.hunks);
 
